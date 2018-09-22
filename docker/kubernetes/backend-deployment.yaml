@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: po-backend
+  labels:
+    app: po
+    component: backend
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: po
+        component: backend
+    spec:
+      containers:
+        - name: po-backend
+          image: openfoodfacts/productopener-backend
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: backend-config
+              mountPath: "/usr/local/apache2/conf/sites-enabled/product-opener.conf"
+              subPath: apache.conf
+            - name: backend-config
+              mountPath: "/opt/product-opener/lib/ProductOpener/Config.pm"
+              subPath: Config.pm
+            - name: backend-config
+              mountPath: "/opt/product-opener/lib/ProductOpener/Config2.pm"
+              subPath: Config2.pm
+            - name: backend-config
+              mountPath: "/opt/product-opener/log.conf"
+              subPath: log.conf
+            - name: product-images
+              mountPath: "/opt/product-opener/html/images/products/"
+            - name: data
+              mountPath: "/mnt/podata/"
+      volumes:
+        - name: backend-config
+          configMap:
+            name: po-backend-config
+        - name: product-images
+          persistentVolumeClaim:
+            claimName: po-images
+        - name: data
+          persistentVolumeClaim:
+            claimName: po-data
